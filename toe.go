@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -18,6 +19,8 @@ func loadgame(c *gin.Context) {
 	c.HTML(http.StatusOK, "loadgame.html", gin.H{
 		"title": "Main website",
 	})
+	name := c.Query("name")
+	fmt.Print(name)
 }
 func getpage(c *gin.Context) {
 	c.HTML(http.StatusOK, "toe.html", gin.H{

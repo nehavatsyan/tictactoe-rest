@@ -8,52 +8,331 @@
     <link rel="icon" src="toe.png"  sizes="16x16">
     <!--font web style-->
     <link href='http://fonts.googleapis.com/css?family=Oleo+Script' rel='stylesheet' type='text/css'>
+    <!--Jquery-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <title>Tic Tac Toe</title>
     <style>
-        #head-toe{
-            font: 400 100px/1.3 'Oleo Script', Helvetica, sans-serif;
-            color: #2b2b2b;
-            text-shadow: 4px 4px 0px rgba(0,0,0,0.1);
-            text-align: center;font-size: 60px;
+        body {
+          background-color: white;
+          color: black;
+          font-family: 'Oleo Script', Helvetica, sans-serif;
+          font-weight: lighter;
+          text-align: center;
         }
-        h1 {
-        text-align: center;
-        }
-        td {
-        width: 100px;
-        height: 100px;
-        }
-        table {
-        margin: 5px auto;
-        }
-        .vert {
-        border-left: 2px solid black;
-        border-right: 2px solid black;
-        }
-        .hori {
-        border-top: 2px solid black;
-        border-bottom: 2px solid black;
-        }
-    </style>
+
+#header {
+  font-size: 50px;
+}
+table {
+  border-spacing: 10px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.cell {
+	font-weight: 900;
+	font-size: 100px;
+  width: 150px;
+  height: 150px;
+  border-radius: 10px;
+  cursor: pointer;
+  background-color: #268;
+	color: rgba(255, 255, 255, 0);
+  opacity: 0.3;
+  transition-duration: 0.4s;
+}
+
+.cellHover {
+  opacity: 0.6;
+	color: rgba(255, 255, 255, 0.5);
+}
+
+.cellRed {
+  opacity: 1;
+  background-color: #2AAFC7;
+	color:rgba(14, 13, 13, 0.9);
+}
+
+.cellBlue {
+  opacity: 1;
+  background-color: #FF6059;
+	color: rgba(14, 13, 13, 0.9);
+}
+
+.modal-container {
+  position: absolute;
+  left: 50%;
+  top: 375px;
+  transform: translate(-50%, -50%);
+	display: none;
+}
+
+.modal {
+  text-align: center;
+  background-color: rgba(245, 121, 121, 0.4);
+  color: #000;
+  padding: 20px 10px 30px 10px;
+	width: 350px;
+}
+
+.modal-title {
+	font-size: 30px;
+	margin-bottom: 30px;
+}
+
+.button-area span {
+	font-family: Raleway;
+  display: inline-block;
+	font-size: 50px;
+	font-weight: 900;
+  background-color: hsla(36, 100%, 99%, 0.95);
+	margin: 0px 20px 0px 20px;
+	width: 60px;
+}
+
+.button-area span:hover {
+  cursor: pointer;
+  background-color: hsla(40, 1%, 54%, 0.95);
+}
+</style>
+<script>
+      $(document).ready(function() {
+
+reset();
+
+$(".cell").hover(function() {
+  if ($(this).text() != "" || !inGame) return;
+  $(this).text(getSymbol()).addClass("cellHover");
+}, function() {
+  if (tiles[parseInt($(this).attr('id'))] != 0) return;
+  $(this).text("").removeClass("cellHover");
+});
+
+$(".cell").click(function() {
+  if (!inGame) return;
+  pressed(parseInt($(this).attr('id')));
+  $(this).removeClass("cellHover");
+});
+
+});
+
+var player, tiles, inGame, choosenPlayer;
+var wp = [[0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]]; // the winning patterns
+
+function chooseModal(winner) {
+console.log("chooseModal");
+
+$('.modal-container').css('display', 'block');
+$('.choose-modal').addClass('bounceInUp');
+if (winner != undefined)
+  $(".modal-title").text(winner);
+
+$('.button-area span').click(function() {
+  console.log("clicked");
+  choosenPlayer = $(this).text() == "X" ? 1 : -1;
+
+  $('.choose-modal').addClass('bounceOutDown');
+  setTimeout(function() {
+    $('.modal-container').css('display', 'none');
+    inGame = true;
+  }, 600);
+  // $('.button-area span').off();
+});
+
+}
+
+function getSymbol() {
+return player==choosenPlayer ? "X" : "O";
+}
+
+function reset(winner) {
+player = 1;
+inGame = false
+tiles = [];
+for (var i = 0; i < 9; i++) {
+  tiles.push(0);
+  $("#"+i).text("").removeClass("cellRed").removeClass("cellBlue");
+}
+$('.choose-modal').removeClass("bounceOutDown").removeClass("bounceInUp");
+chooseModal(winner);
+}
+
+function set(i) {
+console.log("set", i, player);
+tiles = calc(tiles, i, player);
+let clr = player==1 ? "cellRed" : "cellBlue";
+$("#"+i).text(getSymbol()).addClass(clr);
+player = -player;
+}
+
+function pressed(number) {
+
+if (finished() != 2) {
+  runFinished();
+  return;
+}
+
+if (tiles[number] != 0) return;
+
+set(number);
+
+if (finished() == 2) {
+    set(minMax(tiles.slice(0), 0, -1));
+}
+if (finished() != 2)
+  setTimeout(runFinished, 300);
+}
+
+function runFinished() {
+inGame = false;
+//var draw =0;
+if (finished() == 0) {
+  setTimeout(function() {
+    reset("Im sorry You could not win P.S AI IS UNBEATABLE (:");
+   // draw++;
+  }, 500);
+  return;
+}
+
+var winp;
+for (var i = 0; i < wp.length; i++) {
+  if (tiles[wp[i][0]] === tiles[wp[i][1]] && tiles[wp[i][0]] === tiles[wp[i][2]] && tiles[wp[i][0]] !== 0)
+    winp = wp[i];
+}
+  //TODO: animation
+
+  // I don't need to check who won since the AI is unbeatable. :D
+  setTimeout(function() {
+    reset("Wanna Try Again ??")
+  }, 500);
+}
+
+
+function calc(tiles, i, player) {
+tiles[i] = player;
+return tiles;
+}
+
+function finished() {
+return finished_(tiles);
+}
+
+function finished_(tiles) {
+
+// 2: unfinished
+// 0: full and noboy winns
+
+for (var i = 0; i < wp.length; i++) {
+  if (tiles[wp[i][0]] === tiles[wp[i][1]] && tiles[wp[i][0]] === tiles[wp[i][2]] && tiles[wp[i][0]] !== 0)
+    return tiles[wp[i][0]];
+}
+
+for (var i = 0; i < tiles.length; i++)
+  if (tiles[i] === 0)
+    return 2;
+return 0; // means it's a full board
+
+}
+
+function minMax(tiles_, depth, player_) {
+
+  if (finished_(tiles_) != 2) {
+    return finished_(tiles_);
+  }
+
+  let moves = getValids(tiles_);
+  var results = [];
+
+  for (var i = 0; i < moves.length; i++) {
+    results.push(minMax(calc(tiles_.slice(0), moves[i], player_), depth-1, -player_));
+  }
+
+  var indexOfBest = 0;
+
+  for (var i = 0; i < moves.length; i++) {
+    if (player_ == player) {
+      if (results[indexOfBest] > results[i]) {
+        indexOfBest = i;
+      }
+    }
+    else {
+      if (results[indexOfBest] < results[i]) {
+        indexOfBest = i;
+      }
+    }
+  }
+
+  return depth == 0 ? moves[indexOfBest] : results[indexOfBest];
+
+}
+
+function getValids(tiles_) {
+  var arr = [];
+  for (var i = 0; i < tiles_.length; i++) {
+    if (tiles_[i] == 0) {
+      arr.push(i);
+    }
+  }
+  return arr;
+}
+
+</script>
 </head>
 <body>
-    <p id="head-toe">Tic Tac Toe <img height="50px" src="toe.png" alt="Tic Tac Toe png"></p> 
-    <table>
-        <tr>
-          <td></td>
-          <td class="vert"></td>
-          <td></td>
-        </tr>
-        <tr>
-          <td class="hori"></td>
-          <td class="vert hori"></td>
-          <td class="hori"></td>
-        </tr>
-        <tr>
-          <td></td>
-          <td class="vert"></td>
-          <td></td>
-        </tr>
-      </table>
+    <h1 id="header">Tic Tac Toe <img height="50px" src="toe.png" alt="Tic Tac Toe png"></h1>
+    <table style="margin-left: 0px; border: 1px solid;">
+      <tr>
+        <th style="padding-right: 20px;">Player Name</th>
+        <th style="padding-right: 20px;">Win</th>
+        <th style="padding-right: 20px;">loss</th >
+        <th style="padding-right: 20px;">Draw</th >
+      </tr>
+      <tr>
+        <td style="padding-right: 20px;" > You </td>
+        <td style="padding-right: 20px;" >{{.win}}</td style="padding-right: 20px;">
+        <td style="padding-right: 20px;">{{.loss}}</td>
+        <td style="padding-right: 20px;">{{.draw}}</td>
+      </tr>
+      <tr>
+        <td style="padding-right: 20px;" > AI</td>
+        <td style="padding-right: 20px;">{{.wina}}</td>
+        <td style="padding-right: 20px;">{{.lossa}}</td>
+        <td style="padding-right: 20px;">{{.drawa}}</td>
+      </tr>
+    </table>
+		<table>
+			<tr>
+				<td class="cell" id="0"></td>
+				<td class="cell" id="1"></td>
+				<td class="cell" id="2"></td>
+			</tr>
+			<tr>
+				<td class="cell" id="3"></td>
+				<td class="cell" id="4"></td>
+				<td class="cell" id="5"></td>
+			</tr>
+			<tr>
+				<td class="cell" id="6"></td>
+				<td class="cell" id="7"></td>
+				<td class="cell" id="8"></td>
+			</tr>
+		</table>
+
+		<div class="modal-container">
+      <div class="modal choose-modal animated">
+        <h3 class="modal-title">Choose your Symbol:</h3>
+        <div class="button-area"><span class="x-marker">X</span><span class="o-marker">O</span>
+        </div>
+      </div>
+    </div>
+
+		<div class="lines">
+			<div class="diagonal">
+
+			</div>
+		</div>
+
 </body>
 </html>

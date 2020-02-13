@@ -36,35 +36,33 @@
             margin: 10px;
         }
     </style>
-    <script>
-        /* $(document).ready(function(){ // Togle data
-        $("button").click(function(){
-            $("#toggle-data").toggle();
-            $("#choose").append("<p>Player 1:</p>")
-
-        });
-        }); */
-    </script>
+    <!-- <script>
+        function getData(){
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    document.getElementById("demo").innerHTML = this.responseText;
+                }
+  };
+        }
+    </script> -->
 </head>
-<body>
-    <p id="head-toe">Tic Tac Toe <img height="50px" src="toe.png" alt="Tic Tac Toe png"></p> 
+<body id="head-toe">
+    <h1 id="head-toe">Tic Tac Toe <img height="50px" src="toe.png" alt="Tic Tac Toe png"></h1> 
     <div id="choose">
         <div>
             <form method="GET" action="/tac">
-                <label>Enter user name -> Player 1: </label>
-                <input type="text" name="name" > <br>
-                <label>Enter your name -> Player 2: </label>
-                <input type="text" name="names" > <br>
-               <!--  <label>Choose symbol :  </label>
-                <input type="radio" id="x" name="icon" value="x">
-                <label for="x">X  </label> 
-                <input type="radio" id="y" name="icon" value="y">
-                <label for="y">  Y</label><br> -->
+                <h1>{{.title}}</h1>
+                <label>Enter user name : </label>
+                <input type="text" placeholder="Enter Username"name="name" id="name"required > <br>
+                <label for="psw">Password : </label>
+                <input type="password" placeholder="Enter Password" name="psw" required>
                 <input type="submit" style="padding: 05px 20px;font-size: 15px; font-family: Oleo Script;" value="Play">
             </form>
         </div>
 
     </div>
+    
     
 </body>
 </html>
